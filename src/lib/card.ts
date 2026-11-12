@@ -15,7 +15,7 @@ export function luhnCheck(digits: string): boolean {
   return total % 10 === 0;
 }
 
-export type Network = "visa" | "mastercard" | "amex" | null;
+export type Network = "visa" | "mastercard" | "amex" | "rupay" | null;
 
 export function detectNetwork(digits: string): Network {
   // Visa: starts with 4
@@ -31,6 +31,10 @@ export function detectNetwork(digits: string): Network {
   // Mastercard (new range): first 4 digits between 2221 and 2720
   const firstFour = Number(digits.slice(0, 4));
   if (firstFour >= 2221 && firstFour <= 2720) return "mastercard";
+
+  // RuPay: starts with 60, 65, 81, 82 or 508
+  if (["60", "65", "81", "82"].includes(digits.slice(0, 2))) return "rupay";
+  if (digits.startsWith("508")) return "rupay";
 
   return null;
 }
@@ -75,7 +79,7 @@ export function toDigits(value: string): string {
 
 export function formatCardNumber(value: string): string {
   const digits = toDigits(value).slice(0, 16);
-  return digits.match(/.{1,4}/g)?.join(" ") ?? "";
+  return digits.match(/.{1,4}/g)?.join(" - ") ?? "";
 }
 
 export function formatExpiry(value: string): string {

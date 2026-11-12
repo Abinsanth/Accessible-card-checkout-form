@@ -18,7 +18,12 @@ type Errors = {
   cvv?: string;
 };
 
-const networkLabel = { visa: "Visa", mastercard: "Mastercard", amex: "Amex" };
+const networkLabel = {
+  visa: "Visa",
+  mastercard: "Mastercard",
+  amex: "Amex",
+  rupay: "RuPay",
+};
 
 const inputClass =
   "mt-1 w-full rounded border border-slate-400 px-3 py-2 " +
