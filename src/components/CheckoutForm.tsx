@@ -49,7 +49,10 @@ export default function CheckoutForm() {
       found.cardNumber = "Card number must be 16 digits (15 for Amex).";
     else if (!luhnCheck(digits))
       found.cardNumber = "This card number isn't valid. Check for typos.";
-    if (!isValidName(name)) found.name = "Enter the name shown on the card.";
+    if (!isValidName(name))
+      found.name = name.trim()
+        ? "Name can't contain numbers."
+        : "Enter the name shown on the card.";
     if (!isValidExpiry(expiry))
       found.expiry =
         "Enter a valid expiry date in MM/YY that isn't in the past.";
@@ -109,6 +112,7 @@ export default function CheckoutForm() {
           id="name"
           type="text"
           autoComplete="cc-name"
+          maxLength={50}
           className={inputClass}
           value={name}
           onChange={(e) => setName(e.target.value)}

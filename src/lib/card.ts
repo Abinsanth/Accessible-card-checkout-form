@@ -66,7 +66,7 @@ export function isValidCvv(cvv: string, cardDigits: string): boolean {
 }
 
 export function isValidName(name: string): boolean {
-  return name.trim().length > 0;
+  return name.trim().length > 0 && !/\d/.test(name);
 }
 
 export function toDigits(value: string): string {
