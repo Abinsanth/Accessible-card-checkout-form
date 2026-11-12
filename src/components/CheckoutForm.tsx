@@ -1,4 +1,4 @@
-import { useState, type SubmitEvent } from "react";
+import { useRef, useState, type SubmitEvent } from "react";
 import {
   detectNetwork,
   formatCardNumber,
@@ -20,7 +20,10 @@ type Errors = {
 
 const networkLabel = { visa: "Visa", mastercard: "Mastercard", amex: "Amex" };
 
-const inputClass = "mt-1 w-full rounded border border-slate-400 px-3 py-2";
+const inputClass =
+  "mt-1 w-full rounded border border-slate-400 px-3 py-2 " +
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700 " +
+  "aria-invalid:border-red-700";
 const errorClass = "mt-1 text-sm text-red-700";
 
 export default function CheckoutForm() {
@@ -31,6 +34,11 @@ export default function CheckoutForm() {
   const [errors, setErrors] = useState<Errors>({});
   const [success, setSuccess] = useState(false);
   const network = detectNetwork(toDigits(cardNumber));
+
+  const cardNumberRef = useRef<HTMLInputElement>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
+  const expiryRef = useRef<HTMLInputElement>(null);
+  const cvvRef = useRef<HTMLInputElement>(null);
 
   function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault(); // stop the page reloading
@@ -51,6 +59,11 @@ export default function CheckoutForm() {
 
     setErrors(found);
     setSuccess(Object.keys(found).length === 0);
+
+    if (found.cardNumber) cardNumberRef.current?.focus();
+    else if (found.name) nameRef.current?.focus();
+    else if (found.expiry) expiryRef.current?.focus();
+    else if (found.cvv) cvvRef.current?.focus();
   }
 
   return (
@@ -69,6 +82,7 @@ export default function CheckoutForm() {
           )}
         </div>
         <input
+          ref={cardNumberRef}
           id="card-number"
           type="text"
           inputMode="numeric"
@@ -76,26 +90,44 @@ export default function CheckoutForm() {
           className={inputClass}
           value={cardNumber}
           onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+          aria-invalid={!!errors.cardNumber}
+          aria-describedby={errors.cardNumber ? "card-number-error" : undefined}
         />
-        {errors.cardNumber && <p className={errorClass}>{errors.cardNumber}</p>}
+        <div aria-live="polite">
+          {errors.cardNumber && (
+            <p id="card-number-error" className={errorClass}>
+              {errors.cardNumber}
+            </p>
+          )}
+        </div>
       </div>
 
       <div>
         <label htmlFor="name">Cardholder name</label>
         <input
+          ref={nameRef}
           id="name"
           type="text"
           autoComplete="cc-name"
           className={inputClass}
           value={name}
           onChange={(e) => setName(e.target.value)}
+          aria-invalid={!!errors.name}
+          aria-describedby={errors.name ? "name-error" : undefined}
         />
-        {errors.name && <p className={errorClass}>{errors.name}</p>}
+        <div aria-live="polite">
+          {errors.name && (
+            <p id="name-error" className={errorClass}>
+              {errors.name}
+            </p>
+          )}
+        </div>
       </div>
 
       <div>
         <label htmlFor="expiry">Expiry date (MM/YY)</label>
         <input
+          ref={expiryRef}
           id="expiry"
           type="text"
           inputMode="numeric"
@@ -103,13 +135,22 @@ export default function CheckoutForm() {
           className={inputClass}
           value={expiry}
           onChange={(e) => setExpiry(formatExpiry(e.target.value))}
+          aria-invalid={!!errors.expiry}
+          aria-describedby={errors.expiry ? "expiry-error" : undefined}
         />
-        {errors.expiry && <p className={errorClass}>{errors.expiry}</p>}
+        <div aria-live="polite">
+          {errors.expiry && (
+            <p id="expiry-error" className={errorClass}>
+              {errors.expiry}
+            </p>
+          )}
+        </div>
       </div>
 
       <div>
         <label htmlFor="cvv">CVV</label>
         <input
+          ref={cvvRef}
           id="cvv"
           type="text"
           inputMode="numeric"
@@ -117,21 +158,31 @@ export default function CheckoutForm() {
           className={inputClass}
           value={cvv}
           onChange={(e) => setCvv(toDigits(e.target.value).slice(0, 4))}
+          aria-invalid={!!errors.cvv}
+          aria-describedby={errors.cvv ? "cvv-error" : undefined}
         />
-        {errors.cvv && <p className={errorClass}>{errors.cvv}</p>}
+        <div aria-live="polite">
+          {errors.cvv && (
+            <p id="cvv-error" className={errorClass}>
+              {errors.cvv}
+            </p>
+          )}
+        </div>
       </div>
 
       <button
         type="submit"
-        className="rounded bg-blue-700 px-4 py-3 font-semibold text-white"
+        className="rounded bg-blue-700 px-4 py-3 font-semibold text-white hover:bg-blue-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
       >
         Pay
       </button>
-      {success && (
-        <p className="rounded bg-green-100 p-3 text-green-800">
-          Card details look valid. Nothing was sent or stored.
-        </p>
-      )}
+      <div role="status">
+        {success && (
+          <p className="rounded bg-green-100 p-3 text-green-800">
+            Card details look valid. Nothing was sent or stored.
+          </p>
+        )}
+      </div>
     </form>
   );
 }
