@@ -78,7 +78,9 @@ export function toDigits(value: string): string {
 }
 
 export function formatCardNumber(value: string): string {
-  const digits = toDigits(value).slice(0, 16);
+  const all = toDigits(value);
+  const max = detectNetwork(all) === "amex" ? 15 : 16;
+  const digits = all.slice(0, max);
   return digits.match(/.{1,4}/g)?.join(" - ") ?? "";
 }
 

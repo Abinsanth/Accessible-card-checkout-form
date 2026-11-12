@@ -30,6 +30,7 @@ const inputClass =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700 " +
   "aria-invalid:border-red-700";
 const errorClass = "mt-1 text-sm text-red-700";
+const hintClass = "text-sm text-slate-600";
 
 export default function CheckoutForm() {
   const [cardNumber, setCardNumber] = useState("");
@@ -44,6 +45,12 @@ export default function CheckoutForm() {
   const nameRef = useRef<HTMLInputElement>(null);
   const expiryRef = useRef<HTMLInputElement>(null);
   const cvvRef = useRef<HTMLInputElement>(null);
+
+  // Editing a field removes its old error and hides the old success message.
+  function clearError(field: keyof Errors) {
+    setSuccess(false);
+    setErrors((prev) => ({ ...prev, [field]: undefined }));
+  }
 
   function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault(); // stop the page reloading
@@ -97,7 +104,10 @@ export default function CheckoutForm() {
           autoComplete="cc-number"
           className={inputClass}
           value={cardNumber}
-          onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+          onChange={(e) => {
+            setCardNumber(formatCardNumber(e.target.value));
+            clearError("cardNumber");
+          }}
           aria-invalid={!!errors.cardNumber}
           aria-describedby={errors.cardNumber ? "card-number-error" : undefined}
         />
@@ -120,7 +130,10 @@ export default function CheckoutForm() {
           maxLength={50}
           className={inputClass}
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => {
+            setName(e.target.value);
+            clearError("name");
+          }}
           aria-invalid={!!errors.name}
           aria-describedby={errors.name ? "name-error" : undefined}
         />
@@ -143,7 +156,10 @@ export default function CheckoutForm() {
           autoComplete="cc-exp"
           className={inputClass}
           value={expiry}
-          onChange={(e) => setExpiry(formatExpiry(e.target.value))}
+          onChange={(e) => {
+            setExpiry(formatExpiry(e.target.value));
+            clearError("expiry");
+          }}
           aria-invalid={!!errors.expiry}
           aria-describedby={errors.expiry ? "expiry-error" : undefined}
         />
@@ -158,6 +174,11 @@ export default function CheckoutForm() {
 
       <div>
         <label htmlFor="cvv">CVV</label>
+        <p id="cvv-hint" className={hintClass}>
+          {network === "amex"
+            ? "4 digits on the front of the card"
+            : "3 digits on the back of the card"}
+        </p>
         <input
           ref={cvvRef}
           id="cvv"
@@ -166,9 +187,12 @@ export default function CheckoutForm() {
           autoComplete="cc-csc"
           className={inputClass}
           value={cvv}
-          onChange={(e) => setCvv(toDigits(e.target.value).slice(0, 4))}
+          onChange={(e) => {
+            setCvv(toDigits(e.target.value).slice(0, 4));
+            clearError("cvv");
+          }}
           aria-invalid={!!errors.cvv}
-          aria-describedby={errors.cvv ? "cvv-error" : undefined}
+          aria-describedby={errors.cvv ? "cvv-hint cvv-error" : "cvv-hint"}
         />
         <div aria-live="polite">
           {errors.cvv && (
